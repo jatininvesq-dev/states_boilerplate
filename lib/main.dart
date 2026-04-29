@@ -6,6 +6,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:states_app/app.dart';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:states_app/core/global/theme/theme_service.dart';
+import 'package:states_app/core/preferences/user_preferences.dart';
+import 'package:states_app/core/services/env_service.dart';
+import 'package:get/get.dart';
+
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+  }
+}
+
 Future<void> main() async {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
@@ -15,12 +30,12 @@ Future<void> main() async {
     // FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
     // await GetStorage.init();
 
-    // AppSession.init();
+    AppSession.init();
     // await NotificationService.init();
-    // await EnvService.ensureEnvFilesExist();
-    // final activePath = await EnvService.activeEnvPath();
-    // final envString = await File(activePath).readAsString();
-    // dotenv.loadFromString(envString: envString, isOptional: true);
+    await EnvService.ensureEnvFilesExist();
+    final activePath = await EnvService.activeEnvPath();
+    final envString = await File(activePath).readAsString();
+    dotenv.loadFromString(envString: envString, isOptional: true);
     
     
     // HttpOverrides.global = MyHttpOverrides();
@@ -48,6 +63,10 @@ Future<void> main() async {
     PlatformDispatcher.instance.onError = (error, stack) {
       return true;
     };
+
+    // Initialize ThemeService
+    Get.put(ThemeService());
+
     runApp(App());
   }, (Object error, StackTrace stack) {});
 }
