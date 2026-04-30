@@ -28,6 +28,27 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+
+  #UI
+  flutter_screenutil: ^5.9.3
+
+  #Network
+  flutter_dotenv: ^6.0.0
+  dio: ^5.9.0
+  package_info_plus: ^9.0.0
+  either_dart: ^1.0.0
+  talker_dio_logger: ^5.0.2
+  connectivity_plus: ^7.0.0
+  shared_preferences: ^2.5.3
+  intl: ^0.20.2
+
+  #state management
+  flutter_riverpod: ^2.6.1
+
+  #navigation
+  freezed_annotation: ^3.1.0
+
+
   flutter:
     sdk: flutter
 
@@ -36,6 +57,10 @@ dependencies:
   cupertino_icons: ^1.0.8
 
 dev_dependencies:
+  freezed: ^3.0.6
+
+  build_runner: ^2.4.8
+
   flutter_test:
     sdk: flutter
 
