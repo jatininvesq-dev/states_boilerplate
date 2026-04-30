@@ -4,7 +4,19 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:states_app/app.dart';
+import 'package:states_app/core/services/env_service.dart';
+
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+  }
+}
 
 Future<void> main() async {
   runZonedGuarded(() async {
@@ -17,10 +29,10 @@ Future<void> main() async {
 
     // AppSession.init();
     // await NotificationService.init();
-    // await EnvService.ensureEnvFilesExist();
-    // final activePath = await EnvService.activeEnvPath();
-    // final envString = await File(activePath).readAsString();
-    // dotenv.loadFromString(envString: envString, isOptional: true);
+    await EnvService.ensureEnvFilesExist();
+    final activePath = await EnvService.activeEnvPath();
+    final envString = await File(activePath).readAsString();
+    dotenv.loadFromString(envString: envString, isOptional: true);
     
     
     // HttpOverrides.global = MyHttpOverrides();
@@ -48,8 +60,7 @@ Future<void> main() async {
     PlatformDispatcher.instance.onError = (error, stack) {
       return true;
     };
-    runApp(App());
+
+    runApp(const ProviderScope(child: App()));
   }, (Object error, StackTrace stack) {});
 }
-
-
