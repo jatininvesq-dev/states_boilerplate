@@ -4,11 +4,11 @@ part of 'app_page.dart';
 abstract class Routes {
   Routes._();
   static const SPLASH = _Paths.SPLASH;
-
+  static const CHAT = _Paths.CHAT;
 }
 
 abstract class _Paths {
   _Paths._();
   static const SPLASH = '/splash';
-  
+  static const CHAT = '/chat';
 }
