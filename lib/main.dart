@@ -4,7 +4,10 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:states_app/app.dart';
+import 'package:states_app/core/di/app_injection.dart';
+import 'package:states_app/core/services/env_service.dart';
 
 Future<void> main() async {
   runZonedGuarded(() async {
@@ -17,11 +20,13 @@ Future<void> main() async {
 
     // AppSession.init();
     // await NotificationService.init();
-    // await EnvService.ensureEnvFilesExist();
-    // final activePath = await EnvService.activeEnvPath();
-    // final envString = await File(activePath).readAsString();
-    // dotenv.loadFromString(envString: envString, isOptional: true);
+    await EnvService.ensureEnvFilesExist();
+    final activePath = await EnvService.activeEnvPath();
+    final envString = await File(activePath).readAsString();
+    dotenv.loadFromString(envString: envString, isOptional: true);
     
+    // Initialize BLoCs via Dependency Injection
+    final appBlocProviders = await AppInjection.init();
     
     // HttpOverrides.global = MyHttpOverrides();
     SystemChrome.setPreferredOrientations([
@@ -48,7 +53,7 @@ Future<void> main() async {
     PlatformDispatcher.instance.onError = (error, stack) {
       return true;
     };
-    runApp(App());
+    runApp(App(counterBloc: appBlocProviders.counterBloc));
   }, (Object error, StackTrace stack) {});
 }
 
