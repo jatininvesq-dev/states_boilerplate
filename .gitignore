@@ -11,6 +11,10 @@
 .svn/
 .swiftpm/
 migrate_working_dir/
+.env
+/environments/.env
+/environments/debug.env
+/environments/gpt.env
 
 # IntelliJ related
 *.iml
