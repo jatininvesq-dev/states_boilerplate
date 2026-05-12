@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -20,10 +21,14 @@ Future<void> main() async {
 
     // AppSession.init();
     // await NotificationService.init();
-    await EnvService.ensureEnvFilesExist();
-    final activePath = await EnvService.activeEnvPath();
-    final envString = await File(activePath).readAsString();
-    dotenv.loadFromString(envString: envString, isOptional: true);
+    if (!kIsWeb) {
+      await EnvService.ensureEnvFilesExist();
+      final activePath = await EnvService.activeEnvPath();
+      final envString = await File(activePath).readAsString();
+      dotenv.loadFromString(envString: envString, isOptional: true);
+    } else {
+      dotenv.loadFromString(envString: "", isOptional: true);
+    }
     
     // Initialize BLoCs via Dependency Injection
     final appBlocProviders = await AppInjection.init();
