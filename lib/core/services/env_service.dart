@@ -40,7 +40,10 @@ class EnvService {
 
   static Future<void> setSelectedOption(String option) async {
     final box = GetStorage();
-    await box.write(_storageKey, option == optionDebug ? optionDebug : optionDefault);
+    await box.write(
+      _storageKey,
+      option == optionDebug ? optionDebug : optionDefault,
+    );
   }
 
   static Future<void> ensureEnvFilesExist() async {
@@ -66,7 +69,9 @@ class EnvService {
   }
 
   static String _normalize(String input) {
-    final trimmedRight = input.replaceAll(RegExp(r'[ \t]+\n'), '\n').trimRight();
+    final trimmedRight = input
+        .replaceAll(RegExp(r'[ \t]+\n'), '\n')
+        .trimRight();
     return trimmedRight.isEmpty ? '' : '$trimmedRight\n';
   }
 }

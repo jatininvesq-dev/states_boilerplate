@@ -11,6 +11,7 @@ import 'package:states_app/core/global/theme/theme_service.dart';
 import 'package:states_app/core/preferences/user_preferences.dart';
 import 'package:states_app/core/services/env_service.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 
 class MyHttpOverrides extends HttpOverrides {
   @override
@@ -28,7 +29,7 @@ Future<void> main() async {
     //   options: DefaultFirebaseOptions.currentPlatform,
     // );
     // FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-    // await GetStorage.init();
+    await GetStorage.init();
 
     AppSession.init();
     // await NotificationService.init();
@@ -36,8 +37,7 @@ Future<void> main() async {
     final activePath = await EnvService.activeEnvPath();
     final envString = await File(activePath).readAsString();
     dotenv.loadFromString(envString: envString, isOptional: true);
-    
-    
+
     // HttpOverrides.global = MyHttpOverrides();
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
@@ -70,5 +70,3 @@ Future<void> main() async {
     runApp(App());
   }, (Object error, StackTrace stack) {});
 }
-
-

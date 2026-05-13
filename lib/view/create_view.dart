@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:states_app/provider/auth_provider.dart';
+import 'package:states_app/features/authentication/provider/auth_provider.dart';
 
 class CreateView extends StatefulWidget {
   const CreateView({super.key});
@@ -98,10 +98,12 @@ class _CreateViewState extends State<CreateView> {
 
       // Navigate back or to login
       // Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Account created successfully'),
-        backgroundColor: Colors.green,
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Account created successfully'),
+          backgroundColor: Colors.green,
+        ),
+      );
     }
   }
 
@@ -110,10 +112,7 @@ class _CreateViewState extends State<CreateView> {
     final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Account'),
-        elevation: 0,
-      ),
+      appBar: AppBar(title: const Text('Create Account'), elevation: 0),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -127,19 +126,13 @@ class _CreateViewState extends State<CreateView> {
                 // Header
                 const Text(
                   'Create Your Account',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 const Text(
                   'Fill in your details to get started',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                  ),
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
                   textAlign: TextAlign.center,
                 ),
 
@@ -161,7 +154,9 @@ class _CreateViewState extends State<CreateView> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).primaryColor,
+                      ),
                     ),
                   ),
                   validator: _validateName,
@@ -186,7 +181,9 @@ class _CreateViewState extends State<CreateView> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).primaryColor,
+                      ),
                     ),
                   ),
                   keyboardType: TextInputType.emailAddress,
@@ -205,7 +202,9 @@ class _CreateViewState extends State<CreateView> {
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                        _obscurePassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                       ),
                       onPressed: () {
                         setState(() {
@@ -222,7 +221,9 @@ class _CreateViewState extends State<CreateView> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).primaryColor,
+                      ),
                     ),
                   ),
                   obscureText: _obscurePassword,
@@ -241,7 +242,9 @@ class _CreateViewState extends State<CreateView> {
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
+                        _obscureConfirmPassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                       ),
                       onPressed: () {
                         setState(() {
@@ -258,7 +261,9 @@ class _CreateViewState extends State<CreateView> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).primaryColor,
+                      ),
                     ),
                   ),
                   obscureText: _obscureConfirmPassword,
@@ -292,7 +297,8 @@ class _CreateViewState extends State<CreateView> {
                     ),
                   ),
 
-                if (authProvider.errorMessage != null) const SizedBox(height: 16),
+                if (authProvider.errorMessage != null)
+                  const SizedBox(height: 16),
 
                 // Create Account Button
                 ElevatedButton(
@@ -309,12 +315,17 @@ class _CreateViewState extends State<CreateView> {
                           width: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
                           ),
                         )
                       : const Text(
                           'Create Account',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                 ),
 
