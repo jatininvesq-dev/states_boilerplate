@@ -352,6 +352,7 @@ class _InboxMessegeViewState extends State<InboxMessegeView> {
                               },
                             ),
                     ),
+                    _buildSuggestionsSection(chatProvider, selectedUserId),
                     _buildMessageInput(context, chatProvider),
                   ],
                 ),
@@ -596,5 +597,103 @@ class _InboxMessegeViewState extends State<InboxMessegeView> {
         ),
       ),
     );
+  }
+
+  Widget _buildSuggestionsSection(
+    ChatProvider provider,
+    String? selectedUserId,
+  ) {
+    if (provider.messages.isEmpty) return const SizedBox.shrink();
+
+    final lastMessage = provider.messages.last;
+
+    // Only show suggestions if the last message was from the other user
+    if (lastMessage.fromUserId == provider.currentUserId) {
+      return const SizedBox.shrink();
+    }
+
+    final suggestions = _getSuggestions(lastMessage.content);
+
+    return Container(
+      height: 54,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          top: BorderSide(color: Colors.grey[200]!, width: 0.5),
+        ),
+      ),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        itemCount: suggestions.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: InkWell(
+              onTap: () {
+                if (selectedUserId != null) {
+                  provider.sendMessage(selectedUserId, suggestions[index]);
+                }
+              },
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.blueAccent.withOpacity(0.1),
+                      Colors.blueAccent.withOpacity(0.05),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.blueAccent.withOpacity(0.3),
+                    width: 0.5,
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    suggestions[index],
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Colors.blueAccent,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  List<String> _getSuggestions(String? lastMessage) {
+    if (lastMessage == null) return ["Hello!", "How are you?", "Hi"];
+
+    final msg = lastMessage.toLowerCase();
+
+    if (msg.contains("how are you") || msg.contains("how r u")) {
+      return ["I'm good, you?", "Doing well!", "Great, thanks!"];
+    } else if (msg.contains("hi") ||
+        msg.contains("hello") ||
+        msg.contains("hey")) {
+      return ["Hey there!", "Hi! How's it going?", "Hello!"];
+    } else if (msg.contains("bye") || msg.contains("goodbye")) {
+      return ["Goodbye!", "See ya!", "Take care!"];
+    } else if (msg.contains("thanks") || msg.contains("thank you")) {
+      return ["You're welcome!", "Anytime!", "No problem!"];
+    } else if (msg.contains("good morning")) {
+      return ["Good morning!", "Morning! Have a great day.", "Morning!"];
+    } else if (msg.contains("good night")) {
+      return ["Good night!", "Sweet dreams!", "Sleep well!"];
+    }
+
+    return ["Okay", "Sure", "Thanks!", "Got it"];
   }
 }
