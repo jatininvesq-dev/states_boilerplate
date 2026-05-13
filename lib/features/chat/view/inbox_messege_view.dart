@@ -265,7 +265,7 @@ class _InboxMessegeViewState extends State<InboxMessegeView> {
             ),
             const SizedBox(height: 4),
             Text(
-              DateFormat('HH:mm').format(message.createdAt),
+              DateFormat('hh:mm a').format(message.createdAt),
               style: TextStyle(
                 color: isSender ? Colors.white70 : Colors.black54,
                 fontSize: 12,

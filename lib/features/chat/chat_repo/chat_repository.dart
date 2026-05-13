@@ -24,7 +24,9 @@ class ChatMessage {
       fromUserId: json['fromUserId'] ?? '',
       toUserId: json['toUserId'],
       content: json['content'] ?? '',
-      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
+      createdAt: DateTime.parse(
+        json['createdAt'] ?? DateTime.now().toIso8601String(),
+      ).toLocal(),
     );
   }
 
@@ -57,7 +59,9 @@ class Conversation {
       userId: json['userId'] ?? '',
       userName: json['userName'] ?? 'Unknown',
       lastMessage: json['lastMessage'] ?? '',
-      lastMessageTime: DateTime.parse(json['lastMessageTime'] ?? DateTime.now().toIso8601String()),
+      lastMessageTime: DateTime.parse(
+        json['lastMessageTime'] ?? DateTime.now().toIso8601String(),
+      ).toLocal(),
     );
   }
 }

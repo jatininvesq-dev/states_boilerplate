@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+
 import 'package:states_app/core/routes/app_page.dart';
 import 'package:states_app/features/home/provider/home_provider.dart';
 
@@ -67,8 +69,8 @@ class ChatView extends StatelessWidget {
 
   String _formatDate(String dateStr) {
     try {
-      final date = DateTime.parse(dateStr);
-      return "${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute}";
+      final date = DateTime.parse(dateStr).toLocal();
+      return DateFormat('dd/MM/yyyy hh:mm a').format(date);
     } catch (e) {
       return dateStr;
     }
