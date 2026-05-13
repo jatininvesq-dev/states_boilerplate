@@ -1,13 +1,18 @@
 import 'dart:convert';
 import 'package:web_socket_channel/web_socket_channel.dart';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import '../../../services/api_services.dart';
 
 class ChatMessage {
   final String id;
   final String fromUserId;
   final String? toUserId;
   final String content;
+  final String type; // 'text', 'image', 'document'
+  final String? fileUrl;
+  final String? fileType;
+  final String? fileName;
   final DateTime createdAt;
 
   ChatMessage({
@@ -15,6 +20,10 @@ class ChatMessage {
     required this.fromUserId,
     this.toUserId,
     required this.content,
+    this.type = 'text',
+    this.fileUrl,
+    this.fileType,
+    this.fileName,
     required this.createdAt,
   });
 
@@ -24,6 +33,10 @@ class ChatMessage {
       fromUserId: json['fromUserId'] ?? '',
       toUserId: json['toUserId'],
       content: json['content'] ?? '',
+      type: json['type'] ?? json['messageType'] ?? 'text',
+      fileUrl: json['fileUrl'] ?? json['attachmentUrl'],
+      fileType: json['fileType'],
+      fileName: json['fileName'],
       createdAt: DateTime.parse(
         json['createdAt'] ?? DateTime.now().toIso8601String(),
       ).toLocal(),
@@ -36,40 +49,119 @@ class ChatMessage {
       'fromUserId': fromUserId,
       'toUserId': toUserId,
       'content': content,
+      'type': type,
+      'fileUrl': fileUrl,
+      'fileType': fileType,
+      'fileName': fileName,
       'createdAt': createdAt.toIso8601String(),
     };
   }
 }
 
 class Conversation {
+  String? sId;
+  String? lastMessage;
+  String? lastMessageAt;
+  String? lastFromUserId;
+  User? user;
+  String? otherUserId;
+
+  Conversation({
+    this.sId,
+    this.lastMessage,
+    this.lastMessageAt,
+    this.lastFromUserId,
+    this.user,
+    this.otherUserId,
+  });
+
+  Conversation.fromJson(Map<String, dynamic> json) {
+    sId = json['_id'];
+    lastMessage = json['lastMessage'];
+    lastMessageAt = json['lastMessageAt'];
+    lastFromUserId = json['lastFromUserId'];
+    user = json['user'] != null ? new User.fromJson(json['user']) : null;
+    otherUserId = json['otherUserId'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['_id'] = this.sId;
+    data['lastMessage'] = this.lastMessage;
+    data['lastMessageAt'] = this.lastMessageAt;
+    data['lastFromUserId'] = this.lastFromUserId;
+    if (this.user != null) {
+      data['user'] = this.user!.toJson();
+    }
+    data['otherUserId'] = this.otherUserId;
+    return data;
+  }
+}
+
+class User {
+  String? userId;
+  String? name;
+  String? email;
+
+  User({this.userId, this.name, this.email});
+
+  User.fromJson(Map<String, dynamic> json) {
+    userId = json['userId'];
+    name = json['name'];
+    email = json['email'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['userId'] = this.userId;
+    data['name'] = this.name;
+    data['email'] = this.email;
+    return data;
+  }
+}
+
+/*class Conversation {
   final String userId;
   final String userName;
   final String lastMessage;
+  final String lastMessageType;
+  final String? lastMessageFileUrl;
   final DateTime lastMessageTime;
 
   Conversation({
     required this.userId,
     required this.userName,
     required this.lastMessage,
+    this.lastMessageType = 'text',
+    this.lastMessageFileUrl,
     required this.lastMessageTime,
   });
 
   factory Conversation.fromJson(Map<String, dynamic> json) {
     return Conversation(
-      userId: json['userId'] ?? '',
-      userName: json['userName'] ?? 'Unknown',
+      userId: json['userId'] ?? json['id'] ?? json['_id'] ?? '',
+      userName:
+          json['userName'] ??
+          json['name'] ??
+          json['fullName'] ??
+          json['otherUserName'] ??
+          json['otherUser']?['name'] ??
+          'Unknown',
       lastMessage: json['lastMessage'] ?? '',
+      lastMessageType: json['lastMessageType'] ?? json['type'] ?? 'text',
+      lastMessageFileUrl: json['lastMessageFileUrl'] ?? json['fileUrl'],
       lastMessageTime: DateTime.parse(
         json['lastMessageTime'] ?? DateTime.now().toIso8601String(),
       ).toLocal(),
     );
   }
 }
-
+*/
 class ChatRepository {
   static const String baseUrl = 'http://192.168.1.14:8080';
   static const String wsUrl = 'ws://192.168.1.14:8080';
 
+  final ApiService _apiService = ApiService();
   WebSocketChannel? _channel;
   String? _currentUserId;
   String? _authToken;
@@ -134,7 +226,14 @@ class ChatRepository {
   }
 
   /// Send a one-to-one message
-  void sendMessage({required String toUserId, required String content}) {
+  void sendMessage({
+    required String toUserId,
+    required String content,
+    String type = 'text',
+    String? fileUrl,
+    String? fileType,
+    String? fileName,
+  }) {
     if (_channel == null || _currentUserId == null) {
       throw Exception('WebSocket not initialized');
     }
@@ -144,34 +243,59 @@ class ChatRepository {
       'fromUserId': _currentUserId,
       'toUserId': toUserId,
       'content': content,
+      'messageType': type,
+      'fileUrl': fileUrl,
+      'fileType': fileType,
+      'fileName': fileName,
     };
 
     _channel?.sink.add(jsonEncode(message));
   }
 
+  /// Upload a file to the server
+  Future<Map<String, dynamic>> uploadFile(String filePath) async {
+    try {
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(filePath),
+      });
+
+      final result = await _apiService.post('/messages/upload', formData);
+
+      return result.fold(
+        (error) => throw Exception('Failed to upload file: $error'),
+        (response) => response.data as Map<String, dynamic>,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error uploading file: $e');
+      }
+      rethrow;
+    }
+  }
+
   /// Fetch message history with a specific user
   Future<List<ChatMessage>> fetchMessageHistory(String otherUserId) async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/api/messages/with/$otherUserId'),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
+      final result = await _apiService.get('/messages/with/$otherUserId');
+
+      return result.fold(
+        (error) {
+          if (kDebugMode) {
+            print('Error fetching message history: $error');
+          }
+          return [];
+        },
+        (response) {
+          final decoded = response.data;
+          List<dynamic> data = [];
+          if (decoded is List) {
+            data = decoded;
+          } else if (decoded is Map) {
+            data = decoded['messages'] ?? decoded['data'] ?? [];
+          }
+          return data.map((msg) => ChatMessage.fromJson(msg)).toList();
         },
       );
-
-      if (response.statusCode == 200) {
-        final decoded = jsonDecode(response.body);
-        List<dynamic> data = [];
-        if (decoded is List) {
-          data = decoded;
-        } else if (decoded is Map) {
-          data = decoded['messages'] ?? decoded['data'] ?? [];
-        }
-        return data.map((msg) => ChatMessage.fromJson(msg)).toList();
-      } else {
-        throw Exception('Failed to fetch message history');
-      }
     } catch (e) {
       if (kDebugMode) {
         print('Error fetching message history: $e');
@@ -183,31 +307,74 @@ class ChatRepository {
   /// Fetch conversation list for current user
   Future<List<Conversation>> fetchConversations() async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/api/messages/conversations'),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
+      final result = await _apiService.get('/messages/conversations');
+
+      return result.fold(
+        (error) {
+          if (kDebugMode) {
+            print('Error fetching conversations: $error');
+          }
+          return [];
+        },
+        (response) {
+          final decoded = response.data;
+          List<dynamic> data = [];
+          if (decoded is List) {
+            data = decoded;
+          } else if (decoded is Map) {
+            data = decoded['conversations'] ?? decoded['data'] ?? [];
+          }
+          return data.map((conv) => Conversation.fromJson(conv)).toList();
         },
       );
-
-      if (response.statusCode == 200) {
-        final decoded = jsonDecode(response.body);
-        List<dynamic> data = [];
-        if (decoded is List) {
-          data = decoded;
-        } else if (decoded is Map) {
-          data = decoded['conversations'] ?? decoded['data'] ?? [];
-        }
-        return data.map((conv) => Conversation.fromJson(conv)).toList();
-      } else {
-        throw Exception('Failed to fetch conversations');
-      }
     } catch (e) {
       if (kDebugMode) {
         print('Error fetching conversations: $e');
       }
       return [];
+    }
+  }
+
+  /// Delete a single message
+  Future<bool> deleteMessage(String messageId) async {
+    try {
+      final result = await _apiService.delete('/messages/$messageId');
+      return result.fold(
+        (error) {
+          if (kDebugMode) {
+            print('Error deleting message: $error');
+          }
+          return false;
+        },
+        (response) => response.statusCode == 200,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error deleting message: $e');
+      }
+      return false;
+    }
+  }
+
+  /// Clear all conversation messages
+  Future<bool> clearConversation(String otherUserId) async {
+    try {
+      final result =
+          await _apiService.delete('/messages/conversation/$otherUserId');
+      return result.fold(
+        (error) {
+          if (kDebugMode) {
+            print('Error clearing conversation: $error');
+          }
+          return false;
+        },
+        (response) => response.statusCode == 200,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error clearing conversation: $e');
+      }
+      return false;
     }
   }
 

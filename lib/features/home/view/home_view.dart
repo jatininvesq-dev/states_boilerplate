@@ -7,7 +7,6 @@ import 'package:states_app/features/home/view/profile_view.dart';
 import 'package:states_app/features/chat/provider/chat_provider.dart';
 import 'package:states_app/core/preferences/user_preferences.dart';
 
-
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
 
@@ -32,9 +31,9 @@ class _HomeViewState extends State<HomeView> {
         final token = AppSession.getAccessToken();
         if (mounted) {
           context.read<ChatProvider>().initializeChat(
-                userId: profile.userId,
-                authToken: token,
-              );
+            userId: profile.userId,
+            authToken: token,
+          );
         }
       }
     });
@@ -43,6 +42,7 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     final homeProvider = context.watch<HomeProvider>();
+    final chatProvider = context.watch<ChatProvider>();
 
     final List<Widget> _pages = [
       const DashboardView(),
@@ -61,7 +61,7 @@ class _HomeViewState extends State<HomeView> {
         actions: [
           if (_currentIndex == 1)
             IconButton(
-              onPressed: () => homeProvider.fetchAllUsers(),
+              onPressed: () => chatProvider.loadConversations(),
               icon: const Icon(Icons.refresh),
             ),
           if (_currentIndex == 2)

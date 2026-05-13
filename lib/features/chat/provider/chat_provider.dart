@@ -92,7 +92,68 @@ class ChatProvider extends ChangeNotifier {
 
   /// Send message to specific user
   Future<void> sendMessage(String toUserId, String content) async {
-    if (content.trim().isEmpty) {
+    await _sendMessageInternal(
+      toUserId: toUserId,
+      content: content,
+      type: 'text',
+    );
+  }
+
+  /// Send attachment (image/document) to specific user
+  Future<void> sendAttachment({
+    required String toUserId,
+    required String filePath,
+    required String type,
+    String? content,
+  }) async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      // 1. Upload the file to the server
+      final uploadData = await chatRepository.uploadFile(filePath);
+
+      // Response contains: { fileUrl, fileName, fileType, filename }
+      final fileUrl = uploadData['fileUrl'];
+      final fileName = uploadData['fileName'] ?? uploadData['filename'];
+      final fileType = uploadData['fileType'];
+
+      if (fileUrl == null) {
+        throw Exception('Server did not return a file URL');
+      }
+
+      // 2. Send the message via WebSocket with the returned URL
+      await _sendMessageInternal(
+        toUserId: toUserId,
+        content:
+            content ??
+            (type == 'image' ? 'Sent an image' : 'Sent a document'), //
+        type: type,
+        fileUrl: fileUrl,
+        fileType: fileType,
+        fileName: fileName,
+        localPath: filePath, // Pass the local path for preview
+      );
+    } catch (e) {
+      _error = 'Failed to upload/send attachment: $e';
+      debugPrint(_error);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _sendMessageInternal({
+    required String toUserId,
+    required String content,
+    required String type,
+    String? fileUrl,
+    String? fileType,
+    String? fileName,
+    String? localPath, // Added localPath for preview
+  }) async {
+    if (content.trim().isEmpty && fileUrl == null && localPath == null) {
       _error = 'Message cannot be empty';
       notifyListeners();
       return;
@@ -103,6 +164,10 @@ class ChatProvider extends ChangeNotifier {
       fromUserId: _currentUserId ?? '',
       toUserId: toUserId,
       content: content,
+      type: type,
+      fileUrl: localPath ?? fileUrl, // Use local path for preview if available
+      fileType: fileType,
+      fileName: fileName,
       createdAt: DateTime.now(),
     );
 
@@ -112,7 +177,14 @@ class ChatProvider extends ChangeNotifier {
       notifyListeners();
 
       // Send via WebSocket
-      chatRepository.sendMessage(toUserId: toUserId, content: content);
+      chatRepository.sendMessage(
+        toUserId: toUserId,
+        content: content,
+        type: type,
+        fileUrl: fileUrl,
+        fileType: fileType,
+        fileName: fileName,
+      );
     } catch (e) {
       _error = 'Failed to send message: $e';
       _messages.removeWhere((msg) => msg.id == localMessage.id);
@@ -152,6 +224,54 @@ class ChatProvider extends ChangeNotifier {
           notifyListeners();
         }
       }
+    }
+  }
+
+  /// Delete a single message
+  Future<void> deleteMessage(String messageId) async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      final success = await chatRepository.deleteMessage(messageId);
+      if (success) {
+        _messages.removeWhere((m) => m.id == messageId);
+        // Also update conversations to reflect the potential change in last message
+        await loadConversations();
+      } else {
+        _error = 'Failed to delete message';
+      }
+    } catch (e) {
+      _error = 'Error deleting message: $e';
+      debugPrint(_error);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Clear entire conversation
+  Future<void> clearConversation(String otherUserId) async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      final success = await chatRepository.clearConversation(otherUserId);
+      if (success) {
+        _messages = [];
+        // Also update conversations list
+        await loadConversations();
+      } else {
+        _error = 'Failed to clear conversation';
+      }
+    } catch (e) {
+      _error = 'Error clearing conversation: $e';
+      debugPrint(_error);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
