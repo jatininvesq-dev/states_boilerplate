@@ -99,7 +99,7 @@ class ChatProvider extends ChangeNotifier {
     }
 
     final localMessage = ChatMessage(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
       fromUserId: _currentUserId ?? '',
       toUserId: toUserId,
       content: content,
@@ -126,13 +126,27 @@ class ChatProvider extends ChangeNotifier {
     final message = chatRepository.messageReceived.value;
     if (message != null) {
       // Always update conversations list when any message arrives
-      // This ensures the sidebar/list shows the latest message
       loadConversations();
 
       // Only add to messages list if it belongs to the currently open chat
       if (_selectedUserId != null &&
           (message.fromUserId == _selectedUserId ||
               message.toUserId == _selectedUserId)) {
+        // If the message is from me, it might be a confirmation of a local 'temp_' message
+        if (message.fromUserId == _currentUserId) {
+          final tempIndex = _messages.indexWhere(
+            (m) => m.id.startsWith('temp_') && m.content == message.content,
+          );
+
+          if (tempIndex != -1) {
+            // Replace the temporary local message with the official one from the server
+            _messages[tempIndex] = message;
+            notifyListeners();
+            return;
+          }
+        }
+
+        // Add if not already in the list (prevents duplicates)
         if (!_messages.any((m) => m.id == message.id)) {
           _messages.add(message);
           notifyListeners();
