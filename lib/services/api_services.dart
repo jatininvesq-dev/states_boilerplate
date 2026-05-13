@@ -10,14 +10,37 @@ import 'package:talker_dio_logger/talker_dio_logger_settings.dart';
 
 class ApiService {
   final Dio _dio = Dio();
+  bool _initialized = false;
 
   //
   /// BaseUrl getter
-  String get serverUrl => dotenv.env['SERVER_URL']!;
+  String get serverUrl {
+    final url = dotenv.env['SERVER_URL'];
+    if (url == null || url.isEmpty) {
+      throw Exception(
+        'SERVER_URL is not configured in environment variables. '
+        'Please check your .env file is loaded correctly.',
+      );
+    }
+    return url;
+  }
 
   // ignore: non_constant_identifier_names
   ApiService() {
-    _dio.options.baseUrl = serverUrl;
+    _initializeDio();
+  }
+
+  void _initializeDio() {
+    if (_initialized) return;
+
+    try {
+      _dio.options.baseUrl = serverUrl;
+    } catch (e) {
+      debugPrint(
+        'Warning: Could not set baseUrl immediately. Will retry on first request: $e',
+      );
+    }
+
     _dio.options.headers = {"accept": "application/json"}; //new contenttype
     _dio.interceptors.addAll([
       /// It is used to catch error while requesting to server.
@@ -43,6 +66,8 @@ class ApiService {
         ),
       );
     }
+
+    _initialized = true;
   }
 
   Future<Either<String, Response>> get(
@@ -53,6 +78,11 @@ class ApiService {
     Options? options,
     Map<String, dynamic>? queryParameters,
   }) async {
+    // Ensure baseUrl is set with latest env values
+    if (_dio.options.baseUrl.isEmpty) {
+      _dio.options.baseUrl = serverUrl;
+    }
+
     final connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none) {
       Fluttertoast.showToast(msg: "Please check your internet");
@@ -89,6 +119,11 @@ class ApiService {
     CancelToken? cancelToken,
     Options? options,
   }) async {
+    // Ensure baseUrl is set with latest env values
+    if (_dio.options.baseUrl.isEmpty) {
+      _dio.options.baseUrl = serverUrl;
+    }
+
     final connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none) {
       Fluttertoast.showToast(msg: "Please check your internet");

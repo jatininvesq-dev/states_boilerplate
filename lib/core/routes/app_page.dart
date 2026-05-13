@@ -1,6 +1,7 @@
 
 import 'package:states_app/features/authentication/login/login_view.dart';
 import 'package:states_app/features/authentication/register/register_view.dart';
+import 'package:states_app/features/chat/view/inbox_messege_view.dart';
 import 'package:states_app/features/splash/view/splash_view.dart';
 import 'package:states_app/features/home/view/home_view.dart';
 
@@ -26,6 +27,10 @@ class AppPages {
     GetPage(name: _Paths.HOME, page: () => const HomeView()),
 
     GetPage(
+      name: _Paths.INBOX_MESSEGE,
+      page: () => const InboxMessegeView(),
+    ),
+    GetPage(
       name: _Paths.SPLASH,
       page: () => const SplashView(),
       binding: SplashBinding(),
@@ -35,6 +40,7 @@ class AppPages {
       page: () => const GenerativeChatView(),
       binding: GenerativeChatBinding(),
     ),
+
 
   ];
 }

@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:states_app/core/preferences/user_preferences.dart';
 import 'package:states_app/core/routes/app_page.dart';
 import 'package:states_app/features/home/provider/home_provider.dart';
+import 'package:states_app/features/chat/provider/chat_provider.dart';
+
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -46,17 +48,38 @@ class ProfileView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Center(
+          Center(
             child: CircleAvatar(
               radius: 50,
               backgroundColor: Colors.blueAccent,
-              child: Icon(Icons.person, size: 60, color: Colors.white),
+              child: profile.name.isNotEmpty
+                  ? Text(
+                      profile.name[0].toUpperCase(),
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.person, size: 60, color: Colors.white),
             ),
           ),
           const SizedBox(height: 24),
-          _buildInfoTile('Name', profile.name, Icons.person_outline),
-          _buildInfoTile('Email', profile.email, Icons.email_outlined),
-          _buildInfoTile('User ID', profile.userId, Icons.person),
+          _buildInfoTile(
+            'Name',
+            profile.name.isNotEmpty ? profile.name : 'Unknown',
+            Icons.person_outline,
+          ),
+          _buildInfoTile(
+            'Email',
+            profile.email.isNotEmpty ? profile.email : 'No email',
+            Icons.email_outlined,
+          ),
+          _buildInfoTile(
+            'User ID',
+            profile.userId.isNotEmpty ? profile.userId : 'N/A',
+            Icons.person,
+          ),
           _buildInfoTile(
             'Created At',
             _formatDate(profile.createdAt),
@@ -67,6 +90,7 @@ class ProfileView extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
+                context.read<ChatProvider>().disconnect();
                 AppSession.setAccessToken(null);
                 Navigator.of(context).pushReplacementNamed(Routes.LOGIN);
               },

@@ -6,6 +6,8 @@ import 'package:states_app/features/authentication/provider/auth_provider.dart';
 import 'package:states_app/core/routes/app_page.dart';
 
 import 'package:states_app/features/home/provider/home_provider.dart';
+import 'package:states_app/features/chat/provider/chat_provider.dart';
+import 'package:states_app/features/chat/chat_repo/chat_repository.dart';
 
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
@@ -16,17 +18,23 @@ import 'package:states_app/core/global/theme/theme_service.dart';
 import 'package:states_app/core/routes/app_page.dart';
 import 'package:get/get.dart';
 
-
 class App extends StatelessWidget {
   const App({super.key});
 
   @override
   Widget build(BuildContext context) {
-
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => HomeProvider()),
+        Provider(create: (_) => ChatRepository()),
+        ChangeNotifierProxyProvider<ChatRepository, ChatProvider>(
+          create: (context) => ChatProvider(
+            chatRepository: context.read<ChatRepository>(),
+          ),
+          update: (context, repository, previous) =>
+              previous ?? ChatProvider(chatRepository: repository),
+        ),
       ],
       child: GetMaterialApp(
         title: 'Zego App',
@@ -38,15 +46,15 @@ class App extends StatelessWidget {
     );
   }
 
-    // return ScreenUtilInit(
-    //   designSize: const Size(375, 812),
-    //   minTextAdapt: true,
-    //   splitScreenMode: true,
-    //   builder: (context, child) {
-    //     return buildGetMaterialApp(context);
-    //   },
-    // );
-  }
+  // return ScreenUtilInit(
+  //   designSize: const Size(375, 812),
+  //   minTextAdapt: true,
+  //   splitScreenMode: true,
+  //   builder: (context, child) {
+  //     return buildGetMaterialApp(context);
+  //   },
+  // );
+}
 
 /*GetMaterialApp buildGetMaterialApp(BuildContext context) {
     return GetMaterialApp(
@@ -61,7 +69,7 @@ class App extends StatelessWidget {
         final mediaQuery = MediaQuery.of(context);
         return GestureDetector(
           onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-          behavior: HitTestBehavior.translucent,
+          behavior: HitTestBehavior.deferToChild,
           child: MediaQuery(
             data: mediaQuery.copyWith(
               textScaler: const TextScaler.linear(

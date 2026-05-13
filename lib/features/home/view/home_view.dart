@@ -4,6 +4,9 @@ import 'package:states_app/features/home/provider/home_provider.dart';
 import 'package:states_app/features/home/view/chat_view.dart';
 import 'package:states_app/features/home/view/dashboard_view.dart';
 import 'package:states_app/features/home/view/profile_view.dart';
+import 'package:states_app/features/chat/provider/chat_provider.dart';
+import 'package:states_app/core/preferences/user_preferences.dart';
+
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -19,9 +22,21 @@ class _HomeViewState extends State<HomeView> {
   void initState() {
     super.initState();
     // Fetch profile data when HomeView is initialized
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<HomeProvider>().fetchProfile();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await context.read<HomeProvider>().fetchProfile();
       context.read<HomeProvider>().fetchAllUsers();
+
+      // Initialize Chat with current user
+      final profile = context.read<HomeProvider>().userProfile;
+      if (profile != null) {
+        final token = AppSession.getAccessToken();
+        if (mounted) {
+          context.read<ChatProvider>().initializeChat(
+                userId: profile.userId,
+                authToken: token,
+              );
+        }
+      }
     });
   }
 

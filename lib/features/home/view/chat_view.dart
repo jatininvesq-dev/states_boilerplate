@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:states_app/core/routes/app_page.dart';
 import 'package:states_app/features/home/provider/home_provider.dart';
 
 class ChatView extends StatelessWidget {
@@ -43,12 +44,21 @@ class ChatView extends StatelessWidget {
       itemBuilder: (context, index) {
         final user = users[index];
         return ListTile(
+          onTap: () => Navigator.of(context).pushNamed(
+            Routes.INBOX_MESSEGE,
+            arguments: {
+              'userId': user.userId,
+              'userName': user.name,
+            },
+          ),
           leading: CircleAvatar(
             backgroundColor: Colors.blueAccent,
-            child: Text(user.name[0].toUpperCase()),
+            child: Text(
+              user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
+            ),
           ),
-          title: Text(user.name),
-          subtitle: Text(user.email),
+          title: Text(user.name.isNotEmpty ? user.name : 'Unknown'),
+          subtitle: Text(user.email.isNotEmpty ? user.email : 'No email'),
           trailing: Text(_formatDate(user.createdAt)),
         );
       },

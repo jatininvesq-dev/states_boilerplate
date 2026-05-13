@@ -43,7 +43,7 @@ Future<void> main() async {
     
     // Load GPT_API from gpt.env file
     try {
-      final gptEnvString = await rootBundle.loadString('environments/gpt.env');
+      final gptEnvString = await rootBundle.loadString('environments/.env');
       dotenv.loadFromString(envString: gptEnvString, isOptional: true);
     } catch (e) {
       debugPrint('Error loading gpt.env: $e');
