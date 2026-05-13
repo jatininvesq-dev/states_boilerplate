@@ -20,26 +20,42 @@ class InboxMessegeView extends StatefulWidget {
 
 class _InboxMessegeViewState extends State<InboxMessegeView> {
   late TextEditingController _messageController;
+  late ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
     _messageController = TextEditingController();
+    _scrollController = ScrollController();
 
     // Load chat history if a user is selected
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       final userId = widget.selectedUserId ?? args?['userId'];
-      
+
       if (userId != null) {
-        context.read<ChatProvider>().loadChatHistory(userId);
+        context.read<ChatProvider>().loadChatHistory(userId).then((_) {
+          _scrollToBottom();
+        });
       }
     });
+  }
+
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   @override
   void dispose() {
     _messageController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -195,12 +211,17 @@ class _InboxMessegeViewState extends State<InboxMessegeView> {
                                   ),
                                 )
                               : ListView.builder(
+                                  controller: _scrollController,
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 12,
                                     vertical: 8,
                                   ),
                                   itemCount: messages.length,
                                   itemBuilder: (context, index) {
+                                    // Scroll to bottom when the last item is built
+                                    if (index == messages.length - 1) {
+                                      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+                                    }
                                     final message = messages[index];
                                     return _buildMessageBubble(
                                       context,

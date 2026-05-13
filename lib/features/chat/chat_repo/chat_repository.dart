@@ -86,15 +86,10 @@ class ChatRepository {
       _authToken = authToken;
 
       // Connect to WebSocket
-      _channel = WebSocketChannel.connect(
-        Uri.parse(wsUrl),
-      );
+      _channel = WebSocketChannel.connect(Uri.parse(wsUrl));
 
       // Send init message with userId
-      final initMessage = {
-        'type': 'init',
-        'userId': userId,
-      };
+      final initMessage = {'type': 'init', 'userId': userId};
       _channel?.sink.add(jsonEncode(initMessage));
 
       isConnected.value = true;
@@ -139,10 +134,7 @@ class ChatRepository {
   }
 
   /// Send a one-to-one message
-  void sendMessage({
-    required String toUserId,
-    required String content,
-  }) {
+  void sendMessage({required String toUserId, required String content}) {
     if (_channel == null || _currentUserId == null) {
       throw Exception('WebSocket not initialized');
     }
