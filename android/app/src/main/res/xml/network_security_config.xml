@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Allow HTTPS for all domains by default -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">api.openai.com</domain>
+        <!-- Use default trust anchors for OpenAI API -->
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+</network-security-config>

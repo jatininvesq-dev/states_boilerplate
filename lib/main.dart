@@ -37,7 +37,19 @@ Future<void> main() async {
     final activePath = await EnvService.activeEnvPath();
     final envString = await File(activePath).readAsString();
     dotenv.loadFromString(envString: envString, isOptional: true);
+// <<<<<<< HEAD
 
+// =======
+    
+    // Load GPT_API from gpt.env file
+    try {
+      final gptEnvString = await rootBundle.loadString('environments/gpt.env');
+      dotenv.loadFromString(envString: gptEnvString, isOptional: true);
+    } catch (e) {
+      debugPrint('Error loading gpt.env: $e');
+    }
+    
+// >>>>>>> 9a2063bfb6f3bdfd923ad27c50769c19f885934b
     // HttpOverrides.global = MyHttpOverrides();
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,

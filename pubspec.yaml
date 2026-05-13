@@ -28,6 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+
   flutter:
     sdk: flutter
 
@@ -41,8 +42,6 @@ dependencies:
   provider: ^6.1.5+1
   fluttertoast: ^9.0.0
 
-dev_dependencies:
-
   #Network
   flutter_dotenv: ^6.0.0
   dio: ^5.9.0
@@ -52,12 +51,15 @@ dev_dependencies:
   connectivity_plus: ^7.0.0
   shared_preferences: ^2.5.3
   intl: ^0.20.2
+  uuid: ^4.0.0
 
   #state Management
   get: ^4.7.3
 
   #storage
   get_storage: 2.1.1
+
+dev_dependencies:
 
   flutter_test:
     sdk: flutter
