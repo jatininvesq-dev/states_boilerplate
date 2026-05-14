@@ -102,13 +102,17 @@ class User {
   String? userId;
   String? name;
   String? email;
+  bool? isOnline;
+  String? lastSeen;
 
-  User({this.userId, this.name, this.email});
+  User({this.userId, this.name, this.email, this.isOnline, this.lastSeen});
 
   User.fromJson(Map<String, dynamic> json) {
     userId = json['userId'];
     name = json['name'];
     email = json['email'];
+    isOnline = json['isOnline'];
+    lastSeen = json['lastSeen'];
   }
 
   Map<String, dynamic> toJson() {
@@ -116,6 +120,8 @@ class User {
     data['userId'] = this.userId;
     data['name'] = this.name;
     data['email'] = this.email;
+    data['isOnline'] = this.isOnline;
+    data['lastSeen'] = this.lastSeen;
     return data;
   }
 }
@@ -166,6 +172,9 @@ class ChatRepository {
   String? _currentUserId;
   String? _authToken;
   final ValueNotifier<ChatMessage?> messageReceived = ValueNotifier(null);
+  final ValueNotifier<Map<String, dynamic>?> userStatusReceived = ValueNotifier(
+    null,
+  );
   final ValueNotifier<bool> isConnected = ValueNotifier(false);
 
   /// Initialize WebSocket connection and authenticate
@@ -217,6 +226,8 @@ class ChatRepository {
       if (decoded['type'] == 'message' && decoded['message'] != null) {
         final chatMessage = ChatMessage.fromJson(decoded['message']);
         messageReceived.value = chatMessage;
+      } else if (decoded['type'] == 'user_status') {
+        userStatusReceived.value = decoded;
       }
     } catch (e) {
       if (kDebugMode) {
@@ -339,15 +350,12 @@ class ChatRepository {
   Future<bool> deleteMessage(String messageId) async {
     try {
       final result = await _apiService.delete('/messages/$messageId');
-      return result.fold(
-        (error) {
-          if (kDebugMode) {
-            print('Error deleting message: $error');
-          }
-          return false;
-        },
-        (response) => response.statusCode == 200,
-      );
+      return result.fold((error) {
+        if (kDebugMode) {
+          print('Error deleting message: $error');
+        }
+        return false;
+      }, (response) => response.statusCode == 200);
     } catch (e) {
       if (kDebugMode) {
         print('Error deleting message: $e');
@@ -359,17 +367,15 @@ class ChatRepository {
   /// Clear all conversation messages
   Future<bool> clearConversation(String otherUserId) async {
     try {
-      final result =
-          await _apiService.delete('/messages/conversation/$otherUserId');
-      return result.fold(
-        (error) {
-          if (kDebugMode) {
-            print('Error clearing conversation: $error');
-          }
-          return false;
-        },
-        (response) => response.statusCode == 200,
+      final result = await _apiService.delete(
+        '/messages/conversation/$otherUserId',
       );
+      return result.fold((error) {
+        if (kDebugMode) {
+          print('Error clearing conversation: $error');
+        }
+        return false;
+      }, (response) => response.statusCode == 200);
     } catch (e) {
       if (kDebugMode) {
         print('Error clearing conversation: $e');

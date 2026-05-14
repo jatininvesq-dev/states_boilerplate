@@ -14,6 +14,8 @@ class ChatProvider extends ChangeNotifier {
   ChatProvider({required this.chatRepository}) {
     // Listen to incoming messages
     chatRepository.messageReceived.addListener(_onMessageReceived);
+    // Listen to user status updates
+    chatRepository.userStatusReceived.addListener(_onUserStatusReceived);
     // Listen to connection status changes
     chatRepository.isConnected.addListener(notifyListeners);
   }
@@ -227,6 +229,44 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
+  /// Handle user status updates
+  void _onUserStatusReceived() {
+    final statusUpdate = chatRepository.userStatusReceived.value;
+    if (statusUpdate != null) {
+      final userId = statusUpdate['userId'];
+      final isOnline = statusUpdate['isOnline'];
+
+      if (userId != null) {
+        bool updated = false;
+        // Update the user status in the conversations list
+        for (var i = 0; i < _conversations.length; i++) {
+          final conv = _conversations[i];
+          if (conv.otherUserId == userId ||
+              (conv.user != null && conv.user!.userId == userId)) {
+            if (conv.user != null) {
+              conv.user!.isOnline = isOnline;
+              updated = true;
+            }
+          }
+        }
+        if (updated) {
+          notifyListeners();
+        }
+      }
+    }
+  }
+
+  /// Check if a specific user is online
+  bool isUserOnline(String? userId) {
+    if (userId == null) return false;
+    final conversation = _conversations.firstWhere(
+      (c) =>
+          c.otherUserId == userId || (c.user != null && c.user!.userId == userId),
+      orElse: () => Conversation(),
+    );
+    return conversation.user?.isOnline ?? false;
+  }
+
   /// Delete a single message
   Future<void> deleteMessage(String messageId) async {
     try {
@@ -293,6 +333,7 @@ class ChatProvider extends ChangeNotifier {
   @override
   void dispose() {
     chatRepository.messageReceived.removeListener(_onMessageReceived);
+    chatRepository.userStatusReceived.removeListener(_onUserStatusReceived);
     chatRepository.isConnected.removeListener(notifyListeners);
     disconnect();
     super.dispose();
