@@ -21,19 +21,80 @@ class AuthProvider with ChangeNotifier {
   User? _currentUser;
   bool _isLoading = false;
   String? _errorMessage;
+  bool _isFaceRegistered = false;
+  bool _faceUploadedToServer = false;
+  List<double>? _pendingFaceEmbedding;
 
   User? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get isAuthenticated => _currentUser != null;
+  bool get isFaceRegistered => _isFaceRegistered;
 
   final AuthRepository _authRepository = AuthRepository();
+
+  Future<bool> registerFace(List<double> faceEmbedding) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _pendingFaceEmbedding = List<double>.from(faceEmbedding);
+      final token = AppSession.getAccessToken();
+
+      final response = await _authRepository.registerFaceData(
+        faceEmbedding,
+        authToken: token,
+      );
+
+      return response.fold(
+        (error) {
+          final needsAuth = error.contains('Unauthenticated') ||
+              error.contains('401') ||
+              error.contains('403');
+
+          if (needsAuth) {
+            _isFaceRegistered = true;
+            _isLoading = false;
+            notifyListeners();
+            return true;
+          }
+
+          _errorMessage = error;
+          _isFaceRegistered = false;
+          _isLoading = false;
+          notifyListeners();
+          return false;
+        },
+        (_) {
+          _isFaceRegistered = true;
+          _faceUploadedToServer = true;
+          _isLoading = false;
+          notifyListeners();
+          return true;
+        },
+      );
+    } catch (e) {
+      _errorMessage = 'Face registration failed: ${e.toString()}';
+      _isFaceRegistered = false;
+      _faceUploadedToServer = false;
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
 
   Future<bool> createUser({
     required String name,
     required String email,
     required String password,
   }) async {
+    if (!_isFaceRegistered) {
+      _errorMessage = 'Please register your face before creating an account.';
+      notifyListeners();
+      return false;
+    }
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -45,14 +106,14 @@ class AuthProvider with ChangeNotifier {
         'password': password,
       });
 
-      return response.fold(
-        (error) {
+      return await response.fold(
+        (error) async {
           _errorMessage = error;
           _isLoading = false;
           notifyListeners();
           return false;
         },
-        (data) {
+        (data) async {
           final token = data['token'];
           final userData = data['user'];
 
@@ -66,6 +127,31 @@ class AuthProvider with ChangeNotifier {
             email: userData['email'] ?? email,
             password: password,
           );
+
+          if (!_faceUploadedToServer && _pendingFaceEmbedding != null) {
+            final faceResponse = await _authRepository.registerFaceData(
+              _pendingFaceEmbedding!,
+              authToken: token?.toString(),
+            );
+
+            final faceLinked = faceResponse.fold(
+              (error) {
+                _errorMessage = error;
+                return false;
+              },
+              (_) => true,
+            );
+
+            if (!faceLinked) {
+              _isFaceRegistered = false;
+              _pendingFaceEmbedding = null;
+              _isLoading = false;
+              AppSession.setAccessToken(null);
+              _currentUser = null;
+              notifyListeners();
+              return false;
+            }
+          }
 
           _isLoading = false;
           notifyListeners();
@@ -132,7 +218,18 @@ class AuthProvider with ChangeNotifier {
   void logout() {
     _currentUser = null;
     _errorMessage = null;
+    _isFaceRegistered = false;
+    _faceUploadedToServer = false;
+    _pendingFaceEmbedding = null;
     AppSession.setAccessToken(null); // Clear token on logout
+    notifyListeners();
+  }
+
+  void resetFaceRegistration() {
+    _isFaceRegistered = false;
+    _faceUploadedToServer = false;
+    _pendingFaceEmbedding = null;
+    _errorMessage = null;
     notifyListeners();
   }
 

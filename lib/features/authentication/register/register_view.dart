@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:states_app/core/routes/app_page.dart';
+import 'package:states_app/features/authentication/face/face_registration_dialog.dart';
 import 'package:states_app/features/authentication/provider/auth_provider.dart';
 
 class RegisterView extends StatefulWidget {
@@ -16,6 +17,37 @@ class _RegisterViewState extends State<RegisterView> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  bool _faceDialogShown = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showFaceRegistrationDialog();
+    });
+  }
+
+  Future<void> _showFaceRegistrationDialog() async {
+    if (!mounted || _faceDialogShown) return;
+
+    final authProvider = context.read<AuthProvider>();
+    if (authProvider.isFaceRegistered) return;
+
+    _faceDialogShown = true;
+
+    final registered = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const FaceRegistrationDialog(),
+    );
+
+    if (!mounted) return;
+
+    if (registered != true) {
+      Navigator.of(context).pop();
+    }
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -27,6 +59,7 @@ class _RegisterViewState extends State<RegisterView> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    final isFormEnabled = authProvider.isFaceRegistered;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -62,9 +95,67 @@ class _RegisterViewState extends State<RegisterView> {
                   ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                   textAlign: TextAlign.center,
                 ),
+                if (!isFormEnabled) ...[
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 64, 14, 150)
+                          .withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color.fromARGB(255, 64, 14, 150)
+                            .withValues(alpha: 0.2),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.face_retouching_natural,
+                          color: Color.fromARGB(255, 64, 14, 150),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Complete face registration to unlock the signup form.',
+                            style: TextStyle(color: Colors.grey[800]),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                if (isFormEnabled) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.check_circle, color: Colors.green, size: 20),
+                        SizedBox(width: 8),
+                        Text(
+                          'Face registered successfully',
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 40),
                 TextFormField(
                   controller: _nameController,
+                  enabled: isFormEnabled,
                   decoration: InputDecoration(
                     labelText: 'Full Name',
                     prefixIcon: const Icon(Icons.person_outline),
@@ -86,6 +177,7 @@ class _RegisterViewState extends State<RegisterView> {
                 const SizedBox(height: 20),
                 TextFormField(
                   controller: _emailController,
+                  enabled: isFormEnabled,
                   decoration: InputDecoration(
                     labelText: 'Email',
                     prefixIcon: const Icon(Icons.email_outlined),
@@ -113,6 +205,7 @@ class _RegisterViewState extends State<RegisterView> {
                 const SizedBox(height: 20),
                 TextFormField(
                   controller: _passwordController,
+                  enabled: isFormEnabled,
                   decoration: InputDecoration(
                     labelText: 'Password',
                     prefixIcon: const Icon(Icons.lock_outline),
@@ -147,7 +240,7 @@ class _RegisterViewState extends State<RegisterView> {
                   ),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: authProvider.isLoading
+                  onPressed: !isFormEnabled || authProvider.isLoading
                       ? null
                       : () async {
                           if (_formKey.currentState!.validate()) {
@@ -157,12 +250,14 @@ class _RegisterViewState extends State<RegisterView> {
                               password: _passwordController.text.trim(),
                             );
                             if (success && mounted) {
-                              Navigator.of(context).pushReplacementNamed(Routes.HOME);
+                              Navigator.of(
+                                context,
+                              ).pushReplacementNamed(Routes.HOME);
                             }
                           }
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
+                    backgroundColor: const Color.fromARGB(255, 64, 14, 150),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -199,14 +294,13 @@ class _RegisterViewState extends State<RegisterView> {
                     ),
                     TextButton(
                       onPressed: () {
-                        // Navigator.pop(context);
                         Navigator.of(context).pushNamed(Routes.LOGIN);
                       },
                       child: const Text(
                         'Login',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Colors.blueAccent,
+                          color: Color.fromARGB(255, 64, 14, 150),
                         ),
                       ),
                     ),

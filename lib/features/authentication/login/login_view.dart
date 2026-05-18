@@ -36,7 +36,18 @@ class _LoginViewState extends State<LoginView> {
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
+
               children: [
+                Image.asset('assets/images/logo.png', width: 80, height: 80),
+                SizedBox(height: 20),
+                Text(
+                  "SocialoField",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: const Color.fromARGB(255, 64, 14, 150),
+                    fontSize: 25,
+                  ),
+                ),
                 const SizedBox(height: 40),
                 Text(
                   'Welcome Back',
@@ -134,7 +145,7 @@ class _LoginViewState extends State<LoginView> {
                           }
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
+                    backgroundColor: const Color.fromARGB(255, 64, 14, 150),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -182,7 +193,7 @@ class _LoginViewState extends State<LoginView> {
                         'Register',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Colors.blueAccent,
+                          color: const Color.fromARGB(255, 64, 14, 150),
                         ),
                       ),
                     ),

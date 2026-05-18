@@ -16,12 +16,12 @@ class AuthInterceptor extends Interceptor {
     //   kToken,
     // ); //new "token"
     final token = AppSession.getAccessToken();
-    if (!options.path.contains('/login') &&
-        !options.path.contains('/register')) {
-      /// Fetch your token from local storage (or wherever) and plug it in
-      // var token = '<YOUR-TOKEN-HERE>'; //uncomment
-      options.headers[HttpHeaders.authorizationHeader] =
-          'Bearer $token'; //uncomment
+    final isPublicAuthPath = options.path.contains('/login') ||
+        options.path.contains('/register') ||
+        options.path.contains('/faces/register');
+
+    if (!isPublicAuthPath && token != null && token.isNotEmpty) {
+      options.headers[HttpHeaders.authorizationHeader] = 'Bearer $token';
     }
     handler.next(options);
   }

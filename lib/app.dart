@@ -6,6 +6,7 @@ import 'package:states_app/features/authentication/provider/auth_provider.dart';
 import 'package:states_app/core/routes/app_page.dart';
 
 import 'package:states_app/features/home/provider/home_provider.dart';
+import 'package:states_app/features/home/provider/dashboard_provider.dart';
 import 'package:states_app/features/chat/provider/chat_provider.dart';
 import 'package:states_app/features/chat/chat_repo/chat_repository.dart';
 
@@ -27,6 +28,7 @@ class App extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => HomeProvider()),
+        ChangeNotifierProvider(create: (_) => DashboardProvider()),
         Provider(create: (_) => ChatRepository()),
         ChangeNotifierProxyProvider<ChatRepository, ChatProvider>(
           create: (context) => ChatProvider(

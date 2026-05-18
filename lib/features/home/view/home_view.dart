@@ -50,12 +50,13 @@ class _HomeViewState extends State<HomeView> {
       const ProfileView(),
     ];
 
-    final List<String> _titles = ['Home', 'Chat', 'Profile'];
+    final List<String> _titles = ['SocialoField', 'Chat', 'Profile'];
 
     return Scaffold(
       appBar: AppBar(
         title: Text(_titles[_currentIndex]),
         elevation: 0,
+        centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
         actions: [

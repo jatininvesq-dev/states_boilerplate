@@ -26,14 +26,23 @@ class _SplashViewState extends State<SplashView> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            FlutterLogo(size: 100),
+            // FlutterLogo(size: 100),
+            // SizedBox(height: 20),
+            // CircularProgressIndicator(),
+            Image.asset('assets/images/logo.png', width: 100, height: 100),
             SizedBox(height: 20),
-            CircularProgressIndicator(),
+            Text(
+              "SocialoField",
+              style: TextStyle(
+                color: const Color.fromARGB(255, 64, 14, 150),
+                fontSize: 25,
+              ),
+            ),
           ],
         ),
       ),
