@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:states_app/core/routes/app_page.dart';
 import 'package:states_app/features/authentication/face/face_registration_dialog.dart';
 import 'package:states_app/features/authentication/provider/auth_provider.dart';
+import 'package:states_app/features/home/view/home_view.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
@@ -250,9 +251,10 @@ class _RegisterViewState extends State<RegisterView> {
                               password: _passwordController.text.trim(),
                             );
                             if (success && mounted) {
-                              Navigator.of(
-                                context,
-                              ).pushReplacementNamed(Routes.HOME);
+                              // Navigator.of(
+                              //   context,
+                              // ).pushReplacementNamed(Routes.HOME);
+                              Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomeView(),), (route) => false,);
                             }
                           }
                         },

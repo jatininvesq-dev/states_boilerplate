@@ -4,18 +4,26 @@ import 'package:states_app/core/global/constants/end_points.dart';
 import 'package:states_app/services/api_services.dart';
 
 class AuthRepository {
-  ApiService _apiService = ApiService();
+  final ApiService _apiService = ApiService();
 
   Future<Either<String, Map<String, dynamic>>> register(
-    Map<String, String> data,
+    Map<String, dynamic> data,
   ) async {
     try {
       final res = await _apiService.post(EndPoints.register, data);
       if (res.isRight) {
         if (res.right.statusCode == 201) {
-          return Right(res.right.data);
+          return Right(Map<String, dynamic>.from(res.right.data as Map));
         } else {
-          return Left(res.right.data['message']);
+          final body = res.right.data;
+          if (body is Map) {
+            return Left(
+              body['message']?.toString() ??
+                  body['error']?.toString() ??
+                  'Registration failed',
+            );
+          }
+          return const Left('Registration failed');
         }
       } else {
         return Left(res.left);
@@ -52,10 +60,19 @@ class AuthRepository {
 
   Future<Either<String, Map<String, dynamic>>> registerFaceData(
     List<double> faceEmbedding, {
+    List<double>? faceData,
     String? authToken,
   }) async {
     try {
-      final data = {'faceEmbedding': faceEmbedding};
+      // final data = <String, dynamic>{
+      //   'faceEmbedding': faceEmbedding,
+      //   'faceData': faceData ?? List<double>.from(faceEmbedding),
+      // };
+      final data = {
+        "faceData":{
+          "embedding": faceEmbedding
+        }
+      };
 
       final res = await _apiService.post(
         EndPoints.registerFace,

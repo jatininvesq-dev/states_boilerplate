@@ -5,7 +5,6 @@ import 'package:states_app/features/chat/view/inbox_messege_view.dart';
 import 'package:states_app/features/splash/view/splash_view.dart';
 import 'package:states_app/features/home/view/home_view.dart';
 
-import 'package:states_app/feature/splash/view/splash_view.dart' hide SplashView;
 import 'package:states_app/feature/splash/binding/splash_binding.dart';
 import 'package:states_app/feature/generative_chat/view/generative_chat_view.dart';
 import 'package:states_app/feature/generative_chat/binding/generative_chat_binding.dart';

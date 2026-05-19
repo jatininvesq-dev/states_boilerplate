@@ -23,6 +23,7 @@ class _FaceRegistrationDialogState extends State<FaceRegistrationDialog> {
   bool _isCapturing = false;
   String? _statusMessage;
   String? _errorMessage;
+  List<double>? _lastEmbedding;
 
   @override
   void initState() {
@@ -134,19 +135,21 @@ class _FaceRegistrationDialogState extends State<FaceRegistrationDialog> {
       });
 
       final embedding = _embeddingService.generateEmbeddingFromImage(decoded);
+      _lastEmbedding = List<double>.from(embedding);
       final authProvider = context.read<AuthProvider>();
       final success = await authProvider.registerFace(embedding);
 
       if (!mounted) return;
 
       if (success) {
+        _lastEmbedding = null;
         Navigator.of(context).pop(true);
         return;
       }
 
       setState(() {
         _isCapturing = false;
-        _statusMessage = 'Center your face in the frame, then tap Capture';
+        _statusMessage = 'Face registration failed. You can retry or retake your photo.';
         _errorMessage = authProvider.errorMessage ??
             'Face registration failed. Please try again.';
       });
@@ -156,13 +159,45 @@ class _FaceRegistrationDialogState extends State<FaceRegistrationDialog> {
         _isCapturing = false;
         _statusMessage = 'Center your face in the frame, then tap Capture';
         _errorMessage = 'Face capture failed. Please try again.';
+        _lastEmbedding = null;
       });
     }
+  }
+
+  Future<void> _retryFaceRegistration() async {
+    final embedding = _lastEmbedding;
+    if (embedding == null || _isCapturing) return;
+
+    setState(() {
+      _isCapturing = true;
+      _errorMessage = null;
+      _statusMessage = 'Registering face...';
+    });
+
+    final authProvider = context.read<AuthProvider>();
+    final success = await authProvider.registerFace(embedding);
+
+    if (!mounted) return;
+
+    if (success) {
+      _lastEmbedding = null;
+      Navigator.of(context).pop(true);
+      return;
+    }
+
+    setState(() {
+      _isCapturing = false;
+      _statusMessage =
+          'Face registration failed. You can retry or retake your photo.';
+      _errorMessage = authProvider.errorMessage ??
+          'Face registration failed. Please try again.';
+    });
   }
 
   Future<void> _retry() async {
     setState(() {
       _errorMessage = null;
+      _lastEmbedding = null;
       _isInitializing = true;
       _isCapturing = false;
       _statusMessage = null;
@@ -265,11 +300,33 @@ class _FaceRegistrationDialogState extends State<FaceRegistrationDialog> {
               ),
               if (_errorMessage != null) ...[
                 const SizedBox(height: 12),
+                if (_lastEmbedding != null) ...[
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isCapturing ? null : _retryFaceRegistration,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 64, 14, 150),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text('Retry face registration'),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
                     onPressed: _isInitializing ? null : _retry,
-                    child: const Text('Retry'),
+                    child: Text(
+                      _lastEmbedding != null
+                          ? 'Retake photo'
+                          : 'Retry',
+                    ),
                   ),
                 ),
               ],

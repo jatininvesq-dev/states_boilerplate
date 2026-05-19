@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:either_dart/either.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+// import 'package:fluttertoast/fluttertoast.dart';
 import 'package:states_app/core/network/interceptor.dart';
 import 'package:talker_dio_logger/talker_dio_logger_interceptor.dart';
 import 'package:talker_dio_logger/talker_dio_logger_settings.dart';
@@ -85,7 +85,7 @@ class ApiService {
 
     final connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none) {
-      Fluttertoast.showToast(msg: "Please check your internet");
+      // Fluttertoast.showToast(msg: "Please check your internet");
       return const Left("No internet connection");
     }
     try {
@@ -126,7 +126,7 @@ class ApiService {
 
     final connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none) {
-      Fluttertoast.showToast(msg: "Please check your internet");
+      // Fluttertoast.showToast(msg: "Please check your internet");
       return const Left("No internet connection");
     }
     try {
@@ -168,6 +168,13 @@ class ApiService {
         print("This is service Err without response");
       }
 
+      if (responseData is Map) {
+        final msg = responseData['error'] ?? responseData['message'];
+        if (msg != null) {
+          return Left(msg.toString());
+        }
+      }
+
       if (e.error != null) {
         return Left(e.error.toString());
       }
@@ -188,7 +195,7 @@ class ApiService {
   }) async {
     final connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none) {
-      Fluttertoast.showToast(msg: "Please check your internet");
+      // Fluttertoast.showToast(msg: "Please check your internet");
       return const Left("No internet connection");
     }
     try {

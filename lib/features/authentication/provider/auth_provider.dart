@@ -49,19 +49,9 @@ class AuthProvider with ChangeNotifier {
 
       return response.fold(
         (error) {
-          final needsAuth = error.contains('Unauthenticated') ||
-              error.contains('401') ||
-              error.contains('403');
-
-          if (needsAuth) {
-            _isFaceRegistered = true;
-            _isLoading = false;
-            notifyListeners();
-            return true;
-          }
-
           _errorMessage = error;
           _isFaceRegistered = false;
+          _faceUploadedToServer = false;
           _isLoading = false;
           notifyListeners();
           return false;
@@ -104,6 +94,8 @@ class AuthProvider with ChangeNotifier {
         'name': name,
         'email': email,
         'password': password,
+        if (_pendingFaceEmbedding != null)
+          'faceData': List<double>.from(_pendingFaceEmbedding!),
       });
 
       return await response.fold(

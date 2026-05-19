@@ -80,20 +80,20 @@ class Conversation {
     lastMessage = json['lastMessage'];
     lastMessageAt = json['lastMessageAt'];
     lastFromUserId = json['lastFromUserId'];
-    user = json['user'] != null ? new User.fromJson(json['user']) : null;
+    user = json['user'] != null ? User.fromJson(json['user']) : null;
     otherUserId = json['otherUserId'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['_id'] = this.sId;
-    data['lastMessage'] = this.lastMessage;
-    data['lastMessageAt'] = this.lastMessageAt;
-    data['lastFromUserId'] = this.lastFromUserId;
-    if (this.user != null) {
-      data['user'] = this.user!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['_id'] = sId;
+    data['lastMessage'] = lastMessage;
+    data['lastMessageAt'] = lastMessageAt;
+    data['lastFromUserId'] = lastFromUserId;
+    if (user != null) {
+      data['user'] = user!.toJson();
     }
-    data['otherUserId'] = this.otherUserId;
+    data['otherUserId'] = otherUserId;
     return data;
   }
 }
@@ -116,12 +116,12 @@ class User {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['userId'] = this.userId;
-    data['name'] = this.name;
-    data['email'] = this.email;
-    data['isOnline'] = this.isOnline;
-    data['lastSeen'] = this.lastSeen;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['userId'] = userId;
+    data['name'] = name;
+    data['email'] = email;
+    data['isOnline'] = isOnline;
+    data['lastSeen'] = lastSeen;
     return data;
   }
 }

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:file_picker/file_picker.dart';
+// import 'package:file_picker/file_picker.dart';
 import '../provider/chat_provider.dart';
 import '../chat_repo/chat_repository.dart';
 
@@ -105,16 +105,16 @@ class _InboxMessegeViewState extends State<InboxMessegeView> {
     final selectedUserId = widget.selectedUserId ?? args?['userId'];
     if (selectedUserId == null) return;
 
-    FilePickerResult? result = await FilePicker.pickFiles(type: FileType.any);
+    // FilePickerResult? result = await FilePicker.pickFiles(type: FileType.any);
 
-    if (result != null && result.files.single.path != null) {
-      provider.sendAttachment(
-        toUserId: selectedUserId,
-        filePath: result.files.single.path!,
-        type: 'document',
-        content: result.files.single.name,
-      );
-    }
+    // if (result != null && result.files.single.path != null) {
+    //   provider.sendAttachment(
+    //     toUserId: selectedUserId,
+    //     filePath: result.files.single.path!,
+    //     type: 'document',
+    //     content: result.files.single.name,
+    //   );
+    // }
   }
 
   void _showAttachmentOptions(BuildContext context, ChatProvider provider) {

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:states_app/features/home/provider/home_provider.dart';
 import 'package:states_app/features/home/view/chat_view.dart';
 import 'package:states_app/features/home/view/dashboard_view.dart';
+import 'package:states_app/features/home/view/map_view.dart';
 import 'package:states_app/features/home/view/profile_view.dart';
 import 'package:states_app/features/chat/provider/chat_provider.dart';
 import 'package:states_app/core/preferences/user_preferences.dart';
@@ -44,17 +45,23 @@ class _HomeViewState extends State<HomeView> {
     final homeProvider = context.watch<HomeProvider>();
     final chatProvider = context.watch<ChatProvider>();
 
-    final List<Widget> _pages = [
+    final List<Widget> pages = [
       const DashboardView(),
       const ChatView(),
+      const MapView(),
       const ProfileView(),
     ];
 
-    final List<String> _titles = ['SocialoField', 'Chat', 'Profile'];
+    final List<String> titles = [
+      'SocialoField',
+      'Chat',
+      'Map',
+      'Profile',
+    ];
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_titles[_currentIndex]),
+        title: Text(titles[_currentIndex]),
         elevation: 0,
         centerTitle: true,
         backgroundColor: Colors.white,
@@ -65,7 +72,7 @@ class _HomeViewState extends State<HomeView> {
               onPressed: () => chatProvider.loadConversations(),
               icon: const Icon(Icons.refresh),
             ),
-          if (_currentIndex == 2)
+          if (_currentIndex == 3)
             IconButton(
               onPressed: () => homeProvider.fetchProfile(),
               icon: const Icon(Icons.refresh),
@@ -73,7 +80,7 @@ class _HomeViewState extends State<HomeView> {
         ],
       ),
       backgroundColor: Colors.grey[50],
-      body: _pages[_currentIndex],
+      body: pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
@@ -97,6 +104,11 @@ class _HomeViewState extends State<HomeView> {
             icon: Icon(Icons.chat_bubble_outline),
             activeIcon: Icon(Icons.chat_bubble),
             label: 'Chat',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.map_outlined),
+            activeIcon: Icon(Icons.map),
+            label: 'Map',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),

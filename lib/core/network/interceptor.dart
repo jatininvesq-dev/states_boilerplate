@@ -20,7 +20,7 @@ class AuthInterceptor extends Interceptor {
         options.path.contains('/register') ||
         options.path.contains('/faces/register');
 
-    if (!isPublicAuthPath && token != null && token.isNotEmpty) {
+    if (!isPublicAuthPath && token.isNotEmpty) {
       options.headers[HttpHeaders.authorizationHeader] = 'Bearer $token';
     }
     handler.next(options);

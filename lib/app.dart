@@ -10,14 +10,7 @@ import 'package:states_app/features/home/provider/dashboard_provider.dart';
 import 'package:states_app/features/chat/provider/chat_provider.dart';
 import 'package:states_app/features/chat/chat_repo/chat_repository.dart';
 
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
-import 'package:get/get_navigation/src/routes/observers/route_observer.dart';
-import 'package:get/get_navigation/src/routes/transitions_type.dart';
-import 'package:states_app/core/global/theme/theme_app.dart';
-import 'package:states_app/core/global/theme/theme_service.dart';
-import 'package:states_app/core/routes/app_page.dart';
-import 'package:get/get.dart';
 
 class App extends StatelessWidget {
   const App({super.key});

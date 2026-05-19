@@ -74,7 +74,7 @@ class _DashboardViewState extends State<DashboardView> {
                           comments: '${post.commentCount} Comments',
                         ),
                       );
-                    }).toList(),
+                    }),
                 ],
               ),
             );
