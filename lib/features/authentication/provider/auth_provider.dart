@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../repository/auth_repository.dart';
 import 'package:states_app/core/preferences/user_preferences.dart';
 
@@ -21,7 +22,7 @@ class AuthProvider with ChangeNotifier {
   User? _currentUser;
   bool _isLoading = false;
   String? _errorMessage;
-  bool _isFaceRegistered = false;
+  bool _isFaceRegistered = true; //false
   bool _faceUploadedToServer = false;
   List<double>? _pendingFaceEmbedding;
 
@@ -74,10 +75,93 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+
+  Future<void> sendOtp({
+    required String phoneNumber,
+    required Function(String verificationId) onCodeSent,
+    required Function(String error) onError,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _firebaseAuth.verifyPhoneNumber(
+        phoneNumber: phoneNumber,
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          // Optional: Auto-retrieval or instant verification
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          _isLoading = false;
+          _errorMessage = e.message ?? 'Verification failed';
+          notifyListeners();
+          onError(_errorMessage!);
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          _isLoading = false;
+          notifyListeners();
+          onCodeSent(verificationId);
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {},
+      );
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = e.toString();
+      notifyListeners();
+      onError(e.toString());
+    }
+  }
+
+  Future<bool> verifyOtpAndRegister({
+    required String verificationId,
+    required String smsCode,
+    required String name,
+    required String email,
+    required String password,
+    required String phone,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      PhoneAuthCredential credential = PhoneAuthProvider.credential(
+        verificationId: verificationId,
+        smsCode: smsCode,
+      );
+
+      final userCredential = await _firebaseAuth.signInWithCredential(
+        credential,
+      );
+      if (userCredential.user != null) {
+        // Firebase verification succeeded, now proceed with backend registration
+        final success = await createUser(
+          name: name,
+          email: email,
+          password: password,
+          phone: phone,
+        );
+        return success;
+      } else {
+        _errorMessage = 'Invalid verification code';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _errorMessage = 'OTP Verification failed: ${e.toString()}';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<bool> createUser({
     required String name,
     required String email,
     required String password,
+    required String phone,
   }) async {
     if (!_isFaceRegistered) {
       _errorMessage = 'Please register your face before creating an account.';
@@ -94,6 +178,7 @@ class AuthProvider with ChangeNotifier {
         'name': name,
         'email': email,
         'password': password,
+        'phone': phone,
         if (_pendingFaceEmbedding != null)
           'faceData': List<double>.from(_pendingFaceEmbedding!),
       });
@@ -126,13 +211,10 @@ class AuthProvider with ChangeNotifier {
               authToken: token?.toString(),
             );
 
-            final faceLinked = faceResponse.fold(
-              (error) {
-                _errorMessage = error;
-                return false;
-              },
-              (_) => true,
-            );
+            final faceLinked = faceResponse.fold((error) {
+              _errorMessage = error;
+              return false;
+            }, (_) => true);
 
             if (!faceLinked) {
               _isFaceRegistered = false;

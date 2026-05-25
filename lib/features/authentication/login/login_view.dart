@@ -40,9 +40,9 @@ class _LoginViewState extends State<LoginView> {
 
               children: [
                 // Image.asset('assets/images/logo.png', width: 80, height: 80),
-                LottieBuilder.asset(
-                  'assets/images/candidate-interview-lottie.json',
-                ),
+                // LottieBuilder.asset(
+                //   'assets/images/candidate-interview-lottie.json',
+                // ),
                 SizedBox(height: 20),
                 Text(
                   "SocialoField",

@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:states_app/core/routes/app_page.dart';
 import 'package:states_app/features/authentication/face/face_registration_dialog.dart';
 import 'package:states_app/features/authentication/provider/auth_provider.dart';
-import 'package:states_app/features/home/view/home_view.dart';
+import 'package:states_app/features/authentication/register/verify_otp_view.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
@@ -16,6 +16,7 @@ class _RegisterViewState extends State<RegisterView> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
 
   bool _faceDialogShown = false;
@@ -24,7 +25,7 @@ class _RegisterViewState extends State<RegisterView> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showFaceRegistrationDialog();
+      // _showFaceRegistrationDialog();
     });
   }
 
@@ -53,6 +54,7 @@ class _RegisterViewState extends State<RegisterView> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -101,12 +103,20 @@ class _RegisterViewState extends State<RegisterView> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 64, 14, 150)
-                          .withValues(alpha: 0.08),
+                      color: const Color.fromARGB(
+                        255,
+                        64,
+                        14,
+                        150,
+                      ).withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: const Color.fromARGB(255, 64, 14, 150)
-                            .withValues(alpha: 0.2),
+                        color: const Color.fromARGB(
+                          255,
+                          64,
+                          14,
+                          150,
+                        ).withValues(alpha: 0.2),
                       ),
                     ),
                     child: Row(
@@ -205,6 +215,36 @@ class _RegisterViewState extends State<RegisterView> {
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
+                  controller: _phoneController,
+                  enabled: isFormEnabled,
+                  decoration: InputDecoration(
+                    labelText: 'Phone Number',
+                    prefixIcon: const Icon(Icons.phone_outlined),
+                    hintText: '+1234567890',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey[300]!),
+                    ),
+                  ),
+                  keyboardType: TextInputType.phone,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your phone number';
+                    }
+                    if (!value.startsWith('+')) {
+                      return 'Must start with + and country code (e.g. +1234567890)';
+                    }
+                    if (!RegExp(r'^\+[0-9]{11,15}$').hasMatch(value)) {
+                      return 'Please enter a valid phone number (e.g. +1234567890)';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
+                TextFormField(
                   controller: _passwordController,
                   enabled: isFormEnabled,
                   decoration: InputDecoration(
@@ -245,17 +285,40 @@ class _RegisterViewState extends State<RegisterView> {
                       ? null
                       : () async {
                           if (_formKey.currentState!.validate()) {
-                            final success = await authProvider.createUser(
-                              name: _nameController.text.trim(),
-                              email: _emailController.text.trim(),
-                              password: _passwordController.text.trim(),
+                            final name = _nameController.text.trim();
+                            final email = _emailController.text.trim();
+                            final password = _passwordController.text.trim();
+                            final phone = _phoneController.text.trim();
+
+                            await authProvider.sendOtp(
+                              phoneNumber: phone,
+                              onCodeSent: (verificationId) {
+                                if (mounted) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => VerifyOtpView(
+                                        verificationId: verificationId,
+                                        name: name,
+                                        email: email,
+                                        password: password,
+                                        phone: phone,
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                              onError: (error) {
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(error),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                              },
                             );
-                            if (success && mounted) {
-                              // Navigator.of(
-                              //   context,
-                              // ).pushReplacementNamed(Routes.HOME);
-                              Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomeView(),), (route) => false,);
-                            }
                           }
                         },
                   style: ElevatedButton.styleFrom(
