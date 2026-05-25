@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:states_app/features/authentication/provider/auth_provider.dart';
 import 'package:states_app/features/authentication/register/register_view.dart';
@@ -38,7 +39,10 @@ class _LoginViewState extends State<LoginView> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
 
               children: [
-                Image.asset('assets/images/logo.png', width: 80, height: 80),
+                // Image.asset('assets/images/logo.png', width: 80, height: 80),
+                LottieBuilder.asset(
+                  'assets/images/candidate-interview-lottie.json',
+                ),
                 SizedBox(height: 20),
                 Text(
                   "SocialoField",

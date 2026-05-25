@@ -24,9 +24,8 @@ class App extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
         Provider(create: (_) => ChatRepository()),
         ChangeNotifierProxyProvider<ChatRepository, ChatProvider>(
-          create: (context) => ChatProvider(
-            chatRepository: context.read<ChatRepository>(),
-          ),
+          create: (context) =>
+              ChatProvider(chatRepository: context.read<ChatRepository>()),
           update: (context, repository, previous) =>
               previous ?? ChatProvider(chatRepository: repository),
         ),

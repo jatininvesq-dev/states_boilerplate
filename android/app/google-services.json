@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "164077842585",
+    "project_id": "socialo-field",
+    "storage_bucket": "socialo-field.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:164077842585:android:214082b3e83e5861774808",
+        "android_client_info": {
+          "package_name": "com.example.amanridecare"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAclQ5A8x9MjTIjzEyyB70NGx2fdfT_22Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:164077842585:android:0f37bf4483a25f10774808",
+        "android_client_info": {
+          "package_name": "com.example.states_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAclQ5A8x9MjTIjzEyyB70NGx2fdfT_22Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
