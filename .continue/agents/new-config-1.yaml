@@ -1,0 +1,14 @@
+name: DeepSeek Assistant
+version: 1.0.0
+schema: v1
+
+models:
+  - name: deepseekAPI
+    provider: openai
+    model: deepseek-chat
+    apiBase: https://api.deepseek.com
+    apiKey: sk-4328b85971b74e8bb5a75db1734e0145
+
+context: []
+
+rules: []
