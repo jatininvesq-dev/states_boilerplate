@@ -127,6 +127,9 @@ class ErrorInterceptor extends Interceptor {
           errorMessage = 'Connection error - Unable to connect to the server';
         }
         break;
+      case DioExceptionType.transformTimeout:
+        // TODO: Handle this case.
+        throw UnimplementedError();
     }
 
     err = err.copyWith(error: errorMessage);
